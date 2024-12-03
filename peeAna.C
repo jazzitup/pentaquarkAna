@@ -29,7 +29,7 @@ std::vector<double> xData, yData, zData, eData;
 
 int displayCount=0;
 
-int maxEvents = 1000;
+int maxEvents = 100000;
 
 float protonMass = 9.3827e-01;
 float eleMass =  0.000511;
@@ -37,7 +37,7 @@ float eleMass =  0.000511;
 //void test(TString infile="reconstructed_data_N2100_neutron_theta_0_0.2mard_25GeV_OnlyHcal_info.root") {
 //void peeAna(TString infile="podio_output_Pentaquark_hepmc_output_20241112_50GeV_10evts.hepmc.edm4hep.root") {
 // void peeAna(TString infile="podio_output_Pentaquark_hepmc_output_20241113_50GeV_10000evts.hepmc.edm4hep.root") { 1k E = 50 GeV
-void peeAna(TString infile="podio_files/podio_Pentaquark_hepmc_output_20241126E100-200GeV_eta1.9-7_100000evts_ip6_hidiv_275x18.root") {
+void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta1.9-8_100000evts_ip6_hidiv_275x18.root") {
   // void peeAna(TString infile="podio_pentaquark_6_newSource_2024.12.01.root") {
   
     const int kElse = 0;
@@ -124,23 +124,30 @@ void peeAna(TString infile="podio_files/podio_Pentaquark_hepmc_output_20241126E1
     TH1D *hGen_eta_recoMatched[4];
     TH1D *hGen_phi[4];
     TH1D *hGen_phi_recoMatched[4];
-  
+    TH1D *hEff_p[4];
+    TH1D *hEff_eta[4];
+    TH1D *hEff_phi[4];
+
+    TH2D *hGen_peta[4];
+    TH2D *hGen_peta_recoMatched[4];
+    TH2D *hEff_peta[4];
+    
     for ( int id=0 ; id<=3 ; id++) {
-        hGen_p[id] = new TH1D(Form("hGen_p_id%d",id),"; p^{GEN} (GeV);",100,0,300);
+        hGen_p[id] = new TH1D(Form("hGen_p_id%d",id),"; p^{GEN} (GeV);",100,0,200);
         hGen_p_recoMatched[id] = (TH1D*)hGen_p[id]->Clone(Form("hGen_p_recoMatched_id%d",id));
-        hGen_eta[id] = new TH1D(Form("hGen_eta_id%d",id),"; #eta;",100,0,7);
+        hGen_eta[id] = new TH1D(Form("hGen_eta_id%d",id),"; #eta^{GEN};",100,1,7);
         hGen_eta_recoMatched[id] = (TH1D*)hGen_eta[id]->Clone(Form("hGen_eta_recoMatched_id%d",id));
-        hGen_phi[id] = new TH1D(Form("hGen_phi_id%d",id),"; #phi;",100,-3.2,3.2);
+        hGen_phi[id] = new TH1D(Form("hGen_phi_id%d",id),"; #phi^{GEN};",50,-3.2,3.2);
         hGen_phi_recoMatched[id] = (TH1D*)hGen_phi[id]->Clone(Form("hGen_phi_recoMatched_id%d",id));
+
+        hGen_peta[id] = new TH2D(Form("hgen_petaid%d",id),"; #eta^{GEN}; p^{GEN} (GeV)",30,1,7,20,0,200);
+        hGen_peta_recoMatched[id] = (TH2D*)hGen_peta[id]->Clone(Form("hgen_petaid%d_recomatched",id));
+        
     }
   
     TH1D *hProton_pt = new TH1D("hProton_pt",";p_{T} (GeV)",100,0,30);
     TH1D *hProton_eta = new TH1D ("hProton_eta",";#eta",100,0,7);
     TH1D *hProton_phi = new TH1D ("hProton_phi",";#phi",100,3.141592, -3.141592);
-  
-    TH1D *hProtonReco_pt = (TH1D*)hProton_pt->Clone("hProtonReco_pt");
-    TH1D *hProtonReco_eta = (TH1D*)hProton_eta->Clone("hProtonReco_eta");
-    TH2D *hProtonReco_EtaPt = new TH2D("hProtonReco_EtaPt",";#eta;pT (GeV)",100,0,7,100,0,30);
   
     TH1D *hEle_pt = (TH1D*)hProton_pt->Clone("hEle_pt");
     TH1D *hEle_eta = (TH1D*)hProton_eta->Clone("hEle_eta");
@@ -165,16 +172,17 @@ void peeAna(TString infile="podio_files/podio_Pentaquark_hepmc_output_20241126E1
     TH1D *h_matchDr = new TH1D("h_matchdr",";#DeltaR;",100,0,3);
     TH2D *h_matchDr_eta = new TH2D("h_matchdr_eta",";#DeltaR;#eta",50,0,3,50,0,7);
 
-    TH1D *hPc_mass_reco = new TH1D ("hPc_mass_reco","; m (GeV)",50,0,6);
+    TH1D *hPc_mass_reco = new TH1D ("hPc_mass_reco","; m (GeV)",50,2,5);
     TH1D *hPc_mass_gen = (TH1D*)hPc_mass_reco->Clone("hPc_mass_gen");
 
-    TH1D *hJpsi_mass_reco = new TH1D ("hJpsi_mass_reco","; m (GeV)",50,0,6);
+    TH1D *hJpsi_mass_reco = new TH1D ("hJpsi_mass_reco","; m (GeV)",50,2,5);
     TH1D *hJpsi_mass_gen = (TH1D*)hJpsi_mass_reco->Clone("hJpsi_mass_gen");
 
 
     TH2D *hJpsi_mass_eta_reco = new TH2D ("hJpsi_mass_eta_reco",";J/#psi #eta^{Reco};J/#psi mass^{Reco} (GeV)",10,0,5,50,2.5,3.5);
     TH2D *hPc_mass_eta_reco = new TH2D ("hPc_mass_eta_reco",";P_{c} #eta^{Reco};J/P_{c} mass^{Reco} (GeV)",10,0,5,100,4,5);
-
+    handsomeTH1(hJpsi_mass_eta_reco);
+        
   // pT vs eta
     TH2D* hProton_gen2d =  new TH2D("hProton_gen2d",";#eta;p (GeV);",60,0,6,40,0,200);
     TH2D* hProton_gen2d_recoMatched = (TH2D*)hProton_gen2d->Clone("hProton_gen2d_recoMatched");
@@ -182,16 +190,10 @@ void peeAna(TString infile="podio_files/podio_Pentaquark_hepmc_output_20241126E1
     TH2D* hEle_gen2d =  new TH2D("hEle_gen2d",";#eta;p_{T} (GeV);",60,0,6,40,0,20);
     TH2D* hEle_recoMatchGen2d = (TH2D*)hEle_gen2d->Clone("hEle_recoMatchGen2d");
 
-  // p vs eta
-    TH2D* hProton_gen2d_peta =  new TH2D("hProton_gen2d_peta",";#eta;p (GeV);",50,0,10,100,0,100);
-    TH2D* hProton_recoMatchGen2d_peta = (TH2D*)hProton_gen2d_peta->Clone("hProton_recoMatchGen2d_peta");
-
-    TH2D* hEle_gen2d_peta =  new TH2D("hEle_gen2d_peta",";#eta;p (GeV);",50,0,10,100,0,100);
-    TH2D* hEle_recoMatchGen2d_peta = (TH2D*)hEle_gen2d_peta->Clone("hEle_recoMatchGen2d_peta");
-
+  
   
     handsomeTH1(hProton_pt);  handsomeTH1(hProton_eta); handsomeTH1(hProton_phi);
-    handsomeTH1(hProtonReco_pt);  handsomeTH1(hProtonReco_eta);  handsomeTH1(hProtonReco_EtaPt);
+    
     handsomeTH1(hEle_pt); handsomeTH1(hEle_eta); handsomeTH1(hEle_phi);
     handsomeTH1(hPos_pt); handsomeTH1(hPos_eta); handsomeTH1(hPos_phi);
 
@@ -267,13 +269,21 @@ void peeAna(TString infile="podio_files/podio_Pentaquark_hepmc_output_20241126E1
 	    
             TVector3 genMatch3V(0,0,0);
             if ( thePid != kElse) {
-	      genMatch3V = TVector3(genp_px[iGenOfMinDr], genp_py[iGenOfMinDr], genp_pz[iGenOfMinDr]);
+                genMatch3V = TVector3(genp_px[iGenOfMinDr], genp_py[iGenOfMinDr], genp_pz[iGenOfMinDr]);
                 h_matchDr->Fill(minDr);
                 h_matchDr_eta->Fill( minDr, genMatch3V.Eta());
             }
-            int thePBin = pBinHist->FindBin( genMatch3V.Mag()) - 1; // GEN p
+            hGen_p_recoMatched[thePid]->Fill (genMatch3V.Mag());
+            hGen_eta_recoMatched[thePid]->Fill (genMatch3V.Eta());
+            hGen_phi_recoMatched[thePid]->Fill (genMatch3V.Phi());
+            
+            hGen_peta_recoMatched[thePid]->Fill( genMatch3V.Eta(), genMatch3V.Mag());
+            
             hRecop_p_match[thePid]->Fill( recop3V.Mag());
             hRecop_eta_match[thePid]->Fill( recop3V.PseudoRapidity());
+            
+            
+            int thePBin = pBinHist->FindBin(genMatch3V.Mag()) - 1; // GEN p    
             if ( (thePBin>=0) && (thePBin<4) ) {
 	      hMatch_dp[thePid][thePBin]->Fill ( recop3V.Mag()/genMatch3V.Mag() - 1);
             }
@@ -308,6 +318,7 @@ void peeAna(TString infile="podio_files/podio_Pentaquark_hepmc_output_20241126E1
             hGen_p[thePid]->Fill(gen3V.Mag());
             hGen_eta[thePid]->Fill(gen3V.Eta());
             hGen_phi[thePid]->Fill(gen3V.Phi());
+            hGen_peta[thePid]->Fill(gen3V.Eta(), gen3V.Mag());
       
             float iGenEta = gen3V.PseudoRapidity();
             float iGenPhi = gen3V.Phi();
@@ -365,9 +376,6 @@ void peeAna(TString infile="podio_files/podio_Pentaquark_hepmc_output_20241126E1
 	  //   hProton_recoMatchGen2d->Fill(iGenEta,iGenPt);
 	  //   hProton_recoMatchGen2d_peta->Fill(iGenEta,iGenP);
 
-	  //   hProtonReco_eta->Fill(proton_4vec_reco.Eta());
-	  //   hProtonReco_pt->Fill(proton_4vec_reco.Pt());
-	  //   hProtonReco_EtaPt->Fill( proton_4vec_reco.Eta(), proton_4vec_reco.Pt());
 	  // }
 	  // else if ( genp_pdg[i] == 11) {
 	  //   hEle_pt_match->Fill(iGenPt);
@@ -493,88 +501,83 @@ void peeAna(TString infile="podio_files/podio_Pentaquark_hepmc_output_20241126E1
         
     TCanvas* c0 = new TCanvas("c0","",1200,800);
     c0->Divide(3,2);
-    c0->cd(1);
+    for ( int kpid=1 ; kpid<=3 ; kpid++) {
+        c0->cd(kpid);
+        hGen_peta[kpid]->Draw("colz");
+    }
+    c0->cd(4);
     hRecop_pt->Draw();
     auto legend0 = new TLegend(0.2744468,0.5504032,0.9244663,0.8004032,NULL,"brNDC");
     easyLeg(legend0, "Reconstructd objects");
     legend0->Draw();
     
-    c0->cd(2);
+    c0->cd(5);
     hRecop_eta->Draw();
-    c0->cd(3);
+    c0->cd(6);
     hRecop_phi->Draw();
 
     
     TCanvas* c1 = new TCanvas("c1","",1000,1000);
     c1->Divide(3,3);
     for ( int kpid=1 ; kpid<=3 ; kpid++) {
-        c1->cd(1+3*(kpid-1));
+        c1->cd(kpid);
+        handsomeTH1(hGen_p[kpid],1);
+        handsomeTH1(hGen_p_recoMatched[kpid],2);
         hGen_p[kpid]->Draw("hist");
+        hGen_p_recoMatched[kpid]->Draw("same");
+        
         //hProton_pt_match->Draw("same");
-        c1->cd(2+3*(kpid-1));
+        c1->cd(kpid+3);
+        handsomeTH1(hGen_eta[kpid],1);
+        handsomeTH1(hGen_eta_recoMatched[kpid],2);
         hGen_eta[kpid]->Draw("hist");
+        hGen_eta_recoMatched[kpid]->Draw("same");
+        
         //hProton_eta_match->Draw("same");
-        c1->cd(3+3*(kpid-1));
+        c1->cd(kpid+6);
+        handsomeTH1(hGen_phi[kpid],1);
+        handsomeTH1(hGen_phi_recoMatched[kpid],2);
         hGen_phi[kpid]->Draw("hist");
-        //hProton_phi_match->Draw("same");
+        hGen_phi_recoMatched[kpid]->Draw("same");
     }
 
+     // efficiency 
+    TCanvas* cEff = new TCanvas("cEff","",1000,1000);
+    cEff->Divide(3,3);
+    for ( int kpid=1 ; kpid<=3 ; kpid++) {
+        cEff->cd(kpid);
+        hEff_p[kpid] = (TH1D*)hGen_p_recoMatched[kpid]->Clone(Form("hEff_p_kpid%d",kpid));
+        hEff_p[kpid]->Divide(hGen_p[kpid]);
+        easyRange(hEff_p[kpid]);
+        hEff_p[kpid]->Draw();
+    
+        cEff->cd(kpid+3);
+        hEff_eta[kpid] = (TH1D*)hGen_eta_recoMatched[kpid]->Clone(Form("hEff_eta_kpid%d",kpid));
+        hEff_eta[kpid]->Divide(hGen_eta[kpid]);
+        easyRange(hEff_eta[kpid]);
+        hEff_eta[kpid]->Draw();
+            
+        //hProton_eta_match->Draw("same");
+        cEff->cd(kpid+6);
+        hEff_phi[kpid] = (TH1D*)hGen_phi_recoMatched[kpid]->Clone(Form("hEff_phi_kpid%d",kpid));
+        hEff_phi[kpid]->Divide(hGen_phi[kpid]);
+        easyRange(hEff_phi[kpid]);
+        hEff_phi[kpid]->Draw();
+      }
+    
 
-  
-    TH1D* hProton_pt_eff = (TH1D*)hProton_pt_match->Clone("hProton_pt_eff");
-    TH1D* hEle_pt_eff = (TH1D*)hEle_pt_match->Clone("hEle_pt_eff");
-    TH1D* hPos_pt_eff = (TH1D*)hPos_pt_match->Clone("hPos_pt_eff");
-    hProton_pt_eff->Divide(hProton_pt);
-    hEle_pt_eff->Divide(hEle_pt);
-    hPos_pt_eff->Divide(hPos_pt);
-  
-    handsomeTH1(hProton_pt_eff,1);
-    hProton_pt_eff->SetAxisRange(0,1.2,"Y");
-    hEle_pt_eff->SetAxisRange(0,1.2,"Y");
-    hPos_pt_eff->SetAxisRange(0,1.2,"Y");
-
-
-  
-    TCanvas* c2 = new TCanvas("c2","",1200,400);
-    c2->Divide(3,1);
-    c2->cd(1);
-    hProton_pt_eff->Draw();
-    c2->cd(2);
-    hEle_pt_eff->Draw();
-    c2->cd(3);
-    hPos_pt_eff->Draw();
-
-    TCanvas* c2d = new TCanvas("c2d","",800,800);
-    c2d->Divide(2,2);
-    c2d->cd(1);
-    //    TH2D* hProton_eff2d =  (TH2D*)hProton_recoMatchGen2d->Clone("hProton_recoMatchGen2d");
-    //    hProton_eff2d->Divide(hProton_gen2d);
-    //    handsomeTH2(hProton_eff2d);
-    //    hProton_eff2d->SetStats(0);
-    //    hProton_eff2d->Draw("colz");
-
-    c2d->cd(2);
-    TH2D* hEle_eff2d =  (TH2D*)hEle_recoMatchGen2d->Clone("hEle_recoMatchGen2d");
-    hEle_eff2d->Divide(hEle_gen2d);
-    handsomeTH2(hEle_eff2d);
-    hEle_eff2d->SetStats(0);
-    hEle_eff2d->Draw("colz");
-
-    c2d->cd(3);
-    TH2D* hProton_eff2d_peta =  (TH2D*)hProton_recoMatchGen2d_peta->Clone("hProton_recoMatchGen2d_peta");
-    hProton_eff2d_peta->Divide(hProton_gen2d_peta);
-    handsomeTH2(hProton_eff2d_peta);
-    hProton_eff2d_peta->SetStats(0);
-    hProton_eff2d_peta->Draw("colz");
-
-    c2d->cd(4);
-    TH2D* hEle_eff2d_peta =  (TH2D*)hEle_recoMatchGen2d_peta->Clone("hEle_recoMatchGen2d_peta");
-    hEle_eff2d_peta->Divide(hEle_gen2d_peta);
-    handsomeTH2(hEle_eff2d_peta);
-    hEle_eff2d_peta->SetStats(0);
-    hEle_eff2d_peta->Draw("colz");
+    
 
 
+
+    TCanvas* c2d = new TCanvas("c2d","",1200,400);
+    c2d->Divide(3,1);
+    for ( int kpid=1 ; kpid<=3 ; kpid++) {
+        c2d->cd(kpid);
+        hEff_peta[kpid] = (TH2D*)hGen_peta_recoMatched[kpid]->Clone(Form("hGen_peta_recoMatched_kpid%d",kpid));
+        hEff_peta[kpid]->Divide(hGen_peta[kpid]);
+        hEff_peta[kpid]->Draw("colz");
+    }    
   
     TCanvas* c3 = new TCanvas("c3","",800,400);
     c3->Divide(2,1);
@@ -583,43 +586,28 @@ void peeAna(TString infile="podio_files/podio_Pentaquark_hepmc_output_20241126E1
     c3->cd(2);
     h_matchDr_eta->Draw("colz");
 
-    TCanvas* c4 = new TCanvas("c4","",800,400);
-    c4->Divide(2,1);
+    TCanvas* c4 = new TCanvas("c4","",500,500);
     c4->cd(1);
-    handsomeTH1(hPc_mass_gen,1);
-    handsomeTH1(hPc_mass_reco,2);
-    hPc_mass_reco->SetMarkerStyle(20);
-    hPc_mass_reco->SetMarkerSize(1);
-    hPc_mass_reco->Draw();
-    hPc_mass_gen->Draw("same");
-    c4->cd(2);
     handsomeTH1(hJpsi_mass_gen,1);
-    handsomeTH1(hJpsi_mass_reco,2);
+    handsomeTH1(hJpsi_mass_reco,1);
   //  hJpsi_mass_gen->Draw();
     hJpsi_mass_reco->SetMarkerStyle(20);
     hJpsi_mass_reco->SetMarkerSize(1);
     hJpsi_mass_reco->Draw();
-
+    
+    handsomeTH1(hPc_mass_reco,2);
+    hPc_mass_reco->SetMarkerStyle(20);
+    hPc_mass_reco->SetMarkerSize(1);
+    handsomeTH1(hPc_mass_gen,1);
+    hPc_mass_reco->Draw("same");
+    //hPc_mass_gen->Draw("same");
+    
     TCanvas* c5 = new TCanvas("c5","",800,400);
     c5->Divide(2,1);
     c5->cd(1);
     hJpsi_mass_eta_reco->Draw("colz");
     c5->cd(2);
-    hPc_mass_eta_reco->Draw("colz");
-
-    TCanvas* c6 = new TCanvas("c6","",1200,800);
-    c6->Divide(3,2);
-    c6->cd(1);
-    hProtonReco_pt->Draw();
-    gPad->SetLogy();
-    c6->cd(2);
-    hProtonReco_eta->Draw();
-    gPad->SetLogy();
-    c6->cd(3);
-    hProtonReco_EtaPt->Draw("colz");
-
-  
-  
+    hPc_mass_eta_reco->Draw("colz");  
   
 }
 

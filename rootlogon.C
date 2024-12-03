@@ -39,6 +39,23 @@
    gROOT->SetStyle("MyStyle"); //uncomment to set this style
    gROOT->ForceStyle(); // use this style, not the one saved in root files
 
+
+    gStyle->SetTitleSize(20, "X"); // 0.05 corresponds to approximately font size 20 for X-axis
+    gStyle->SetTitleSize(20, "Y"); // 0.05 corresponds to approximately font size 20 for Y-axis
+    
+    // Optional: Set default title font (e.g., Times New Roman)
+    gStyle->SetTitleFont(43, "X");
+    gStyle->SetTitleFont(43, "Y");
+    gStyle->SetTitleOffset(1., "X");
+    gStyle->SetTitleOffset(1., "Y");
+    gStyle->SetTitleAlign(23);
+
+    gStyle->SetPadBottomMargin(0.13);
+    gStyle->SetPadLeftMargin(0.13);
+    
+    gStyle->SetLabelSize(0.035, "X");
+    gStyle->SetLabelSize(0.035, "Y");
+   
    printf("\n Beginning new ROOT session with private TStyle \n");
 
 }
