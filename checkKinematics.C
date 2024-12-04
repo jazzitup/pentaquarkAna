@@ -27,8 +27,6 @@
 
 std::vector<double> xData, yData, zData, eData;
 
-int displayCount=0;
-
 int maxEvents = 100000;
 
 float protonMass = 9.3827e-01;
