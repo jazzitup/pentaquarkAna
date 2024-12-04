@@ -11,7 +11,7 @@
 
    myStyle->SetLabelSize(0.03,"xyz"); // size of axis values
 
-   
+
    // default canvas positioning
    myStyle->SetCanvasDefX(900);
    myStyle->SetCanvasDefY(20);
@@ -46,15 +46,19 @@
     // Optional: Set default title font (e.g., Times New Roman)
     gStyle->SetTitleFont(43, "X");
     gStyle->SetTitleFont(43, "Y");
-    gStyle->SetTitleOffset(1., "X");
-    gStyle->SetTitleOffset(1., "Y");
-    gStyle->SetTitleAlign(23);
 
-    gStyle->SetPadBottomMargin(0.13);
+    gStyle->SetPadBottomMargin(0.15);
     gStyle->SetPadLeftMargin(0.13);
     
     gStyle->SetLabelSize(0.035, "X");
     gStyle->SetLabelSize(0.035, "Y");
+
+    gStyle->SetMarkerSize(1);
+    gStyle->SetMarkerStyle(20);
+    gStyle->SetTitleOffset(.9, "X");
+    gStyle->SetTitleOffset(.9, "Y");
+
+    // gStyle->SetTitleAlign(23);
    
    printf("\n Beginning new ROOT session with private TStyle \n");
 

@@ -29,7 +29,7 @@ std::vector<double> xData, yData, zData, eData;
 
 int displayCount=0;
 
-int maxEvents = 100000;
+int maxEvents = 1000;
 
 float protonMass = 9.3827e-01;
 float eleMass =  0.000511;
@@ -236,7 +236,7 @@ float eleMass =  0.000511;
         TLorentzVector pc_4vec_gen;
         TLorentzVector jpsi_4vec_gen;
 
-	// Fill the RECO histograms:
+	    // Loop over RECO collection 
         for (unsigned int j=0; j<recop_px.GetSize(); j++) {
       
             TVector3 recop3V(recop_px[j], recop_py[j], recop_pz[j]);
@@ -248,9 +248,10 @@ float eleMass =  0.000511;
             hRecop_peta->Fill( recop3V.PseudoRapidity(), recop3V.Mag());
             hRecop_pteta->Fill( recop3V.PseudoRapidity(), recoPt);
       
-      // Match with Generated particles:
+            // Match with Generated particles:
             double minDr = 100;
             int iGenOfMinDr = -1;
+            // Loop over GEN collection 
             for(unsigned int igen=0; igen<genp_pdg.GetSize(); igen++){ // Loop over thrown particles
     	        if (genp_status[igen] != 1)
         		   continue;
@@ -267,19 +268,19 @@ float eleMass =  0.000511;
                 minDr = 100;
                 iGenOfMinDr = -1;
             }
-      
+        
             int thePid = kElse;
             if ( iGenOfMinDr < 0 ) {   // If it's not matached
                 thePid = kElse;
             }
             else if ((genp_status[iGenOfMinDr]==1)&&(genp_pdg[iGenOfMinDr]==2212))
-	      thePid = kProton;
+    	      thePid = kProton;
             else if ((genp_status[iGenOfMinDr]==1)&&(genp_pdg[iGenOfMinDr]==11))
-	      thePid = kElectron;
+    	      thePid = kElectron;
             else if ((genp_status[iGenOfMinDr]==1)&&(genp_pdg[iGenOfMinDr]==-11))
-	      thePid = kPositron;
+    	      thePid = kPositron;
             else
-	      thePid = kElse;
+    	      thePid = kElse;
 	    
             TVector3 genMatch3V(0,0,0);
             if ( thePid != kElse) {
@@ -301,31 +302,26 @@ float eleMass =  0.000511;
             
             int thePBin = pBinHist->FindBin(genMatch3V.Mag()) - 1; // GEN p    
             if ( (thePBin>=0) && (thePBin<4) ) {
-	      hMatch_dp[thePid][thePBin]->Fill ( recop3V.Mag()/genMatch3V.Mag() - 1);
+    	      hMatch_dp[thePid][thePBin]->Fill ( recop3V.Mag()/genMatch3V.Mag() - 1);
             }
 
-	    if ( thePid == kProton)
-	      proton_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], protonMass);
-	    if ( thePid == kElectron)
-	      ele_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], eleMass);
-	    if ( thePid == kPositron)
-	      pos_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], eleMass);
+    	    if ( thePid == kProton)
+    	      proton_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], protonMass);
+    	    if ( thePid == kElectron)
+    	      ele_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], eleMass);
+    	    if ( thePid == kPositron)
+    	      pos_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], eleMass);
         }
-
-    if (ele_4vec_reco.Eta() > 4 ) 
-        continue;
-    if (pos_4vec_reco.Eta() > 4 ) 
-        continue;
-        
-	jpsi_4vec_reco =  ele_4vec_reco + pos_4vec_reco;
-	pc_4vec_reco =  jpsi_4vec_reco + proton_4vec_reco;
+               
+        jpsi_4vec_reco =  ele_4vec_reco + pos_4vec_reco;
+        pc_4vec_reco =  jpsi_4vec_reco + proton_4vec_reco;
 	
-	
+    
         for(unsigned int i=0; i<genp_pdg.GetSize(); i++)  { // Loop over thrown particles
-	  if (genp_status[i] != 1)
-            continue;
-	  
-	  int thePid = 0;
+            if (genp_status[i] != 1)
+                continue;
+            
+            int thePid = 0;
             if ( genp_pdg[i]==2212) 
                 thePid = kProton; 
             else if ( genp_pdg[i]==11) 
@@ -344,110 +340,18 @@ float eleMass =  0.000511;
             float iGenEta = gen3V.PseudoRapidity();
             float iGenPhi = gen3V.Phi();
         
-            //ele_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], eleMass);
+        }
             
-      // if ( genp_pdg[i] == 2212) {
-      // hProton_pt->Fill(iGenPt);
-      // hProton_eta->Fill(iGenEta);
-      // hProton_phi->Fill(iGenPhi);
-      // proton_4vec_gen.SetXYZM(genp_px[i], genp_py[i], genp_pz[i], protonMass);
-      
-      // hProton_gen2d->Fill(iGenEta,iGenPt);
-      // hProton_gen2d_peta->Fill(iGenEta,iGenP);
-      //      }
-      //      else if ( genp_pdg[i] == 11) {
-      // hEle_pt->Fill(iGenPt);
-      // hEle_eta->Fill(iGenEta);
-      // hEle_phi->Fill(iGenPhi);
-      // ele_4vec_gen.SetXYZM(genp_px[i], genp_py[i], genp_pz[i], eleMass);
-      
-      // hEle_gen2d->Fill(iGenEta,iGenPt);
-      // hEle_gen2d_peta->Fill(iGenEta,iGenP);
-      //      }
-      //      else if ( genp_pdg[i] == -11) {
-      // hPos_pt->Fill(iGenPt);
-      // hPos_eta->Fill(iGenEta);
-      // hPos_phi->Fill(iGenPhi);
-      // pos_4vec_gen.SetXYZM(genp_px[i], genp_py[i], genp_pz[i], eleMass);
-      //      }
-      
-      
-            for (unsigned int j=0; j<recop_px.GetSize(); j++) {
-	
-                if (recop_simID[j] == i) { // Reconstructed by the algorihtm
-	  
-	  
-	  //	  TVector3 genMatReco3V(recop_px[j], recop_py[j], recop_pz[j]);
-                    TVector3 genMatReco3V(recop_px[j], recop_py[j], recop_pz[j]);
-                    float genMatRecoPt = sqrt(recop_px[j]*recop_px[j] + recop_py[j]*recop_py[j]);
-                    float genMatRecoEta = genMatReco3V.PseudoRapidity();
-                    float genMatRecoPhi = genMatReco3V.Phi();
-                    float matchDeta = genMatRecoEta - iGenEta;
-                    float matchDphi = genMatRecoPhi - iGenPhi;
-                    float matchDr = sqrt  ( matchDphi*matchDphi + matchDeta*matchDeta );
-
-	  // h_matchDr->Fill(matchDr);
-	  // h_matchDr_eta->Fill( matchDr, iGenEta);
-	  // if ( genp_pdg[i] == 2212) {
-	  //   hProton_pt_match->Fill(iGenPt);
-	  //   hProton_eta_match->Fill(iGenEta);
-	  //   hProton_phi_match->Fill(iGenPhi);
-	  //   proton_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], protonMass);
-
-	  //   hProton_recoMatchGen2d->Fill(iGenEta,iGenPt);
-	  //   hProton_recoMatchGen2d_peta->Fill(iGenEta,iGenP);
-
-	  // }
-	  // else if ( genp_pdg[i] == 11) {
-	  //   hEle_pt_match->Fill(iGenPt);
-	  //   hEle_eta_match->Fill(iGenEta);
-	  //   hEle_phi_match->Fill(iGenPhi);
-	  //   ele_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], eleMass);
-
-	  //   hEle_recoMatchGen2d->Fill(iGenEta,iGenPt);
-	  //   hEle_recoMatchGen2d_peta->Fill(iGenEta,iGenP);
-	  // }
-	  // else if ( genp_pdg[i] == -11) {
-	  //   hPos_pt_match->Fill(iGenPt);
-	  //   hPos_eta_match->Fill(iGenEta);
-	  //   hPos_phi_match->Fill(iGenPhi);
-	  //   pos_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], eleMass);
-	  // }
-	  
-                }
-	
-	
-            }
-      // for(unsigned int j=0; j<recop_type.GetSize(); j++) 
-      // { 		              
-      //     if(recop_[j] == i) // Find association index matching the index of the thrown particle we are looking at 	
-      //     {
-      //         TVector3 recMom(trackMomX[recoAssoc[j]],trackMomY[recoAssoc[j]],trackMomZ[recoAssoc[j]]); // recoAssoc[j] is the index of the matched ReconstructedChargedParticle                       
-      //     }
-      // }
-        }
-        if (proton_4vec_gen.X() !=0 && ele_4vec_gen.X() !=0 && pos_4vec_gen.X() !=0 ) {
-	  //            pc_4vec_gen = proton_4vec_gen + ele_4vec_gen +pos_4vec_gen;
-            //hPc_mass_gen->Fill (pc_4vec_gen.M());
-        }
-
-
-      
-        if ( ele_4vec_gen.X() !=0 && pos_4vec_gen.X() !=0 ) {
-	  //            jpsi_4vec_gen =  ele_4vec_gen +pos_4vec_gen;
-	  //            hJpsi_mass_gen->Fill (jpsi_4vec_gen.M());
-        }
-
-	jpsi_4vec_reco = ele_4vec_reco +pos_4vec_reco;
-	hJpsi_mass_reco->Fill (jpsi_4vec_reco.M());
-	hJpsi_mass_eta_reco->Fill (jpsi_4vec_reco.Eta(), jpsi_4vec_reco.M());
-	pc_4vec_reco = proton_4vec_reco + ele_4vec_reco +pos_4vec_reco;
-	hPc_mass_reco->Fill (pc_4vec_reco.M());
-	hPc_mass_eta_reco->Fill (pc_4vec_reco.Eta(), pc_4vec_reco.M());
-	
+    
+        jpsi_4vec_reco = ele_4vec_reco +pos_4vec_reco;
+        hJpsi_mass_reco->Fill (jpsi_4vec_reco.M());
+        hJpsi_mass_eta_reco->Fill (jpsi_4vec_reco.Eta(), jpsi_4vec_reco.M());
+        pc_4vec_reco = proton_4vec_reco + ele_4vec_reco +pos_4vec_reco;
+        hPc_mass_reco->Fill (pc_4vec_reco.M());
+        hPc_mass_eta_reco->Fill (pc_4vec_reco.Eta(), pc_4vec_reco.M());
+        	
     
     }
-
 
 
     TCanvas* cMom = new TCanvas("cMom","",1200,600);

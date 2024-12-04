@@ -51,7 +51,8 @@ void handsomeTH3( TH3 *a=0)
 
 void easyLeg( TLegend *l=0, char *title="")
 {
-  l->SetHeader(title,"C"); // option "C" allows to center the header
+  //  l->SetHeader(title,"C"); // option "C" allows to center the header
+  l->SetHeader(title); 
   l->SetBorderSize(0);
   l->SetFillStyle(0);
   //  l->SetTextSize(20);
