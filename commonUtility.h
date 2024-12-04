@@ -18,6 +18,8 @@
 #include <TH2F.h>
 #include <TGaxis.h>
 
+char* dummy="";
+
 void easyRange(TH1 *h=0, double ratio=1.6, double minimum=0.001)
 {
   double maxBinContent = h->GetMaximum();
@@ -56,4 +58,22 @@ void easyLeg( TLegend *l=0, char *title="")
   l->SetBorderSize(0);
   l->SetFillStyle(0);
   //  l->SetTextSize(20);
+}
+
+void addText(char*title ="", float x=0.5,float y=0.9, int color = kBlack, int tsize=20, int angle=0) {
+  TText *t = new TText(x,y,title);
+  t->SetTextAlign(22);
+  t->SetTextColor(color);
+  t->SetTextFont(43);
+  t->SetTextSize(tsize);
+  t->SetTextAngle(angle);
+  t->Draw();
+}  
+void jumSun(float x1=0,float y1=1, float x2=1,float y2=1, int col=kBlack) {
+  TLine *line = new TLine(x1, y1, x2,y2);
+  line->SetLineColor(col);   // Set line color (e.g., red)
+  line->SetLineStyle(2);      // Set line style (2 = dashed)
+  line->SetLineWidth(1);      // Set line width
+  // Draw the line on the canvas
+  line->Draw();
 }

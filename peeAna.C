@@ -37,9 +37,9 @@ float eleMass =  0.000511;
 //void test(TString infile="reconstructed_data_N2100_neutron_theta_0_0.2mard_25GeV_OnlyHcal_info.root") {
 //void peeAna(TString infile="podio_output_Pentaquark_hepmc_output_20241112_50GeV_10evts.hepmc.edm4hep.root") {
 // void peeAna(TString infile="podio_output_Pentaquark_hepmc_output_20241113_50GeV_10000evts.hepmc.edm4hep.root") { 1k E = 50 GeV
-//void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta1.9-8_100000evts_ip6_hidiv_275x18.root") {
+void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta1.9-8_100000evts_ip6_hidiv_275x18.root") {
  // void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta4-8_10000evts_ip6_hidiv_275x18.root") { 
-    void peeAna(TString infile="podio.root") {
+//void peeAna(TString infile="podio.root") {
   
     const int kElse = 0;
     const int kProton = 1;
@@ -186,13 +186,19 @@ float eleMass =  0.000511;
     TH1D *hPos_phi_match = (TH1D*)hPos_phi->Clone("hPos_phi_match");
   
     TH1D *h_matchDr = new TH1D("h_matchdr",";#DeltaR;",200,0,0.5);
-    TH2D *h_matchDr_eta = new TH2D("h_matchdr_eta",";#DeltaR;#eta",50,0,0.05,140,0,7);
+    TH2D *h_matchDr_eta = new TH2D("h_matchdr_eta",";#DeltaR;#eta",200,0,0.5,140,0,7);
 
     TH1D *hPc_mass_reco = new TH1D ("hPc_mass_reco","; m (GeV)",50,2,5);
     TH1D *hPc_mass_gen = (TH1D*)hPc_mass_reco->Clone("hPc_mass_gen");
 
     TH1D *hJpsi_mass_reco = new TH1D ("hJpsi_mass_reco","; m (GeV)",50,2,5);
     TH1D *hJpsi_mass_gen = (TH1D*)hJpsi_mass_reco->Clone("hJpsi_mass_gen");
+    
+    TH1D *hJpsi_eta_gen = new TH1D("hJpsi_eta_gen",";#eta^{J/#psi};",50,0,7);
+    TH1D *hJpsi_eta_reco = (TH1D*)hJpsi_eta_gen->Clone("hJpsi_eta_reco");
+    TH1D *hPc_eta_gen = new TH1D("hJpsi_pc_gen",";#eta^{P_{c}};",50,0,7);
+    TH1D *hPc_eta_reco = (TH1D*)hPc_eta_gen->Clone("hPc_eta_reco");
+    
 
 
     TH2D *hJpsi_mass_eta_reco = new TH2D ("hJpsi_mass_eta_reco",";J/#psi #eta^{Reco};J/#psi mass^{Reco} (GeV)",10,0,5,50,2.5,3.5);
@@ -250,31 +256,35 @@ float eleMass =  0.000511;
 
             if (genp_status[i] != 1)
                 continue;
+            TVector3 gen3V(genp_px[i], genp_py[i], genp_pz[i]);
             
             int thePid = kElse;
-            if ( genp_pdg[i]==2212) 
+            if ( genp_pdg[i]==2212)  { 
                 thePid = kProton; 
-            else if ( genp_pdg[i]==11) 
+                proton_4vec_gen.SetXYZM(gen3V.Px(), gen3V.Py(), gen3V.Pz(), protonMass);
+            }
+            else if ( genp_pdg[i]==11) {
                 thePid = kElectron; 
-            else if ( (int)genp_pdg[i]==-11) 
+                ele_4vec_gen.SetXYZM(gen3V.Px(), gen3V.Py(), gen3V.Pz(), eleMass);
+            }
+            else if ( (int)genp_pdg[i]==-11)  {
                 thePid = kPositron; 
-            else  
+                pos_4vec_gen.SetXYZM(gen3V.Px(), gen3V.Py(), gen3V.Pz(), eleMass);
+            }
+            else  {
                 thePid = kElse; 
-      
-            TVector3 gen3V(genp_px[i], genp_py[i], genp_pz[i]);
+            }
+            
             hGen_p[thePid]->Fill(gen3V.Mag());
             hGen_eta[thePid]->Fill(gen3V.Eta());
             hGen_phi[thePid]->Fill(gen3V.Phi());
             hGen_peta[thePid]->Fill(gen3V.Eta(), gen3V.Mag());
-      
-            float iGenEta = gen3V.PseudoRapidity();
-            float iGenPhi = gen3V.Phi();
-        
+
             // Match with RECO:
             double minDr = 0.3;
             int iRecoOfMinDr = -1;
             
-            // ROOP over GEN collection 
+            // LOOP over RECO collection 
             for (unsigned int ireco=0; ireco<recop_px.GetSize(); ireco++) {
                 if (isGenMatched[ireco] == true) 
                     continue;
@@ -318,7 +328,20 @@ float eleMass =  0.000511;
                 if ( thePid == kPositron)
                   pos_4vec_reco.SetXYZM(matchedReco3V.Px(), matchedReco3V.Py(), matchedReco3V.Pz(), eleMass);
             }
+
+            
+        }
+    
+        if ( (ele_4vec_gen.M()>0) && (pos_4vec_gen.M()>0) )  { // If all particles are generated
+            jpsi_4vec_gen = ele_4vec_gen +pos_4vec_gen;
+            hJpsi_eta_gen->Fill (jpsi_4vec_gen.Eta());
+            
+
+        }
         
+        if (  (proton_4vec_gen.M()>0) && (ele_4vec_gen.M()>0) && (pos_4vec_gen.M()>0) )  { 
+            pc_4vec_gen = proton_4vec_gen + ele_4vec_gen +pos_4vec_gen;
+            hPc_eta_gen->Fill ( pc_4vec_gen.Eta());
         }
 
         if (  (proton_4vec_reco.M()>0) && (ele_4vec_reco.M()>0) && (pos_4vec_reco.M()>0) )  { // If all particles are reconstructed
@@ -326,9 +349,11 @@ float eleMass =  0.000511;
                 
             jpsi_4vec_reco = ele_4vec_reco +pos_4vec_reco;
             hJpsi_mass_reco->Fill (jpsi_4vec_reco.M());
+            hJpsi_eta_reco->Fill(jpsi_4vec_reco.Eta());
             hJpsi_mass_eta_reco->Fill (jpsi_4vec_reco.Eta(), jpsi_4vec_reco.M());
             pc_4vec_reco = proton_4vec_reco + ele_4vec_reco +pos_4vec_reco;
             hPc_mass_reco->Fill (pc_4vec_reco.M());
+            hPc_eta_reco->Fill(pc_4vec_reco.Eta());
             hPc_mass_eta_reco->Fill (pc_4vec_reco.Eta(), pc_4vec_reco.M());
         }
 
@@ -348,6 +373,9 @@ float eleMass =  0.000511;
     
     }
 
+    
+
+    
 
     TCanvas* cMom = new TCanvas("cMom","",1200,600);
     cMom->Divide(2,1);
@@ -366,6 +394,7 @@ float eleMass =  0.000511;
         hRecop_p_match[i]->SetLineWidth(3);
         hRecop_p_match[i]->Draw("same hist");
     }
+        
     auto legend1 = new TLegend(0.4671329,0.6909621,0.9972028,0.8556851,NULL,"brNDC");
     easyLeg(legend1, "");
     legend1->AddEntry(hRecop_p,"Reconstructed particles","pe");
@@ -388,6 +417,8 @@ float eleMass =  0.000511;
         hRecop_eta_match[i]->SetLineWidth(4);
         hRecop_eta_match[i]->Draw("same hist");
     }
+
+    
     
 
 
@@ -399,6 +430,7 @@ float eleMass =  0.000511;
         cResp->cd(i+3);
         hGenEta_RecoEta[i]->Draw("colz");
     }
+        
     
     TCanvas* cRes = new TCanvas("cRes","",1200,900);
     cRes->Divide(4,3);
@@ -415,6 +447,7 @@ float eleMass =  0.000511;
             }
         }
     }
+    
 
     TCanvas* cRes2 = new TCanvas("cRes2","",500,500);
     hResP[kProton]->SetAxisRange(0,0.3,"Y");
@@ -433,6 +466,7 @@ float eleMass =  0.000511;
     legend2->AddEntry(hResP[kPositron],"positron","pe");
     legend2->Draw();
     
+    
 
         
     TCanvas* c0 = new TCanvas("c0","",1200,400);
@@ -441,6 +475,7 @@ float eleMass =  0.000511;
         c0->cd(kpid);
         hGen_peta[kpid]->Draw("colz");
     }
+    
   
     
     TCanvas* c1 = new TCanvas("c1","",1000,1000);
@@ -470,27 +505,40 @@ float eleMass =  0.000511;
      // efficiency 
     TCanvas* cEff = new TCanvas("cEff","",1000,1000);
     cEff->Divide(3,3);
+
     for ( int kpid=1 ; kpid<=3 ; kpid++) {
         cEff->cd(kpid);
         hEff_p[kpid] = (TH1D*)hGen_p_recoMatched[kpid]->Clone(Form("hEff_p_kpid%d",kpid));
         hEff_p[kpid]->Divide(hGen_p[kpid]);
-        easyRange(hEff_p[kpid]);
+        hEff_p[kpid]->SetAxisRange(0,1.2,"Y");
         hEff_p[kpid]->Draw();
+        
     
         cEff->cd(kpid+3);
         hEff_eta[kpid] = (TH1D*)hGen_eta_recoMatched[kpid]->Clone(Form("hEff_eta_kpid%d",kpid));
         hEff_eta[kpid]->Divide(hGen_eta[kpid]);
         easyRange(hEff_eta[kpid]);
+        hEff_eta[kpid]->SetAxisRange(0,1.2,"Y");
         hEff_eta[kpid]->Draw();
-            
+        
         //hProton_eta_match->Draw("same");
         cEff->cd(kpid+6);
         hEff_phi[kpid] = (TH1D*)hGen_phi_recoMatched[kpid]->Clone(Form("hEff_phi_kpid%d",kpid));
         hEff_phi[kpid]->Divide(hGen_phi[kpid]);
         easyRange(hEff_phi[kpid]);
+        hEff_phi[kpid]->SetAxisRange(0,1.2,"Y");
         hEff_phi[kpid]->Draw();
-      }
     
+    }
+
+    cEff->cd(1); 
+    addText("Reco. efficiency",100,1.05);
+    addText("proton",80,0.9);
+    cEff->cd(2); 
+    addText("electron",80,0.9);
+    cEff->cd(3); 
+    addText("positron",80,0.9);
+        
 
     
 
@@ -559,6 +607,39 @@ float eleMass =  0.000511;
     hJpsi_mass_eta_reco->Draw("colz");
     c5->cd(2);
     hPc_mass_eta_reco->Draw("colz");  
+
+    TCanvas* c6 = new TCanvas("c6","",800,400);
+    c6->Divide(2,1);
+    c6->cd(1);
+    TH1D* hJpsi_eta_eff = (TH1D*)hJpsi_eta_reco->Clone("hjpsi_eta_eff");
+    for ( int i = 1 ; i<= hJpsi_eta_gen->GetNbinsX() ; i++) 
+        hJpsi_eta_gen->SetBinError(i, 0);
+    hJpsi_eta_eff->Divide(hJpsi_eta_gen);
+    hJpsi_eta_eff->SetAxisRange(0,1.4,"Y");
+    handsomeTH1(hJpsi_eta_eff);
+    hJpsi_eta_eff->Draw();
+    jumSun(0,1,7,1);
+    auto legend6 = new TLegend(0.3671329,0.6909621,0.8972028,0.8556851,NULL,"brNDC");
+    easyLeg(legend6, "Reco Efficiency");
+    legend6->AddEntry(hJpsi_eta_eff,"e^{+} + e^{-} #leftarrow J/#psi ","pe");
+    legend6->Draw();
+ 
+    c6->cd(2);
+    TH1D* hPc_eta_eff = (TH1D*)hPc_eta_reco->Clone("hPc_eta_eff");
+    for ( int i = 1 ; i<= hPc_eta_gen->GetNbinsX() ; i++) 
+        hPc_eta_gen->SetBinError(i, 0);
+    hPc_eta_eff->Divide(hPc_eta_gen);
+    hPc_eta_eff->SetAxisRange(0,1.4,"Y");
+    handsomeTH1(hPc_eta_eff);
+    hPc_eta_eff->Draw();
+    jumSun(0,1,7,1);
+    auto legend7 = new TLegend(0.3671329,0.6909621,0.8972028,0.8556851,NULL,"brNDC");
+    easyLeg(legend7, "Reco Efficiency");
+    legend7->AddEntry(hPc_eta_eff,"#it{p} + e^{+} + e^{-} #leftarrow P_{c}","pe");
+
+    legend7->Draw();
+ 
+    
   
 }
 
