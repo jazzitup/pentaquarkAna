@@ -29,7 +29,7 @@ std::vector<double> xData, yData, zData, eData;
 
 int displayCount=0;
 
-int maxEvents = 1000;
+int maxEvents = 100000;
 
 float protonMass = 9.3827e-01;
 float eleMass =  0.000511;
@@ -38,14 +38,16 @@ float eleMass =  0.000511;
 //void peeAna(TString infile="podio_output_Pentaquark_hepmc_output_20241112_50GeV_10evts.hepmc.edm4hep.root") {
 // void peeAna(TString infile="podio_output_Pentaquark_hepmc_output_20241113_50GeV_10000evts.hepmc.edm4hep.root") { 1k E = 50 GeV
 //void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta1.9-8_100000evts_ip6_hidiv_275x18.root") {
-// void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta4-8_10000evts_ip6_hidiv_275x18.root") { 
+ // void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta4-8_10000evts_ip6_hidiv_275x18.root") { 
     void peeAna(TString infile="podio.root") {
   
     const int kElse = 0;
     const int kProton = 1;
     const int kElectron = 2;
     const int kPositron = 3;
-  
+
+    bool isGenMatched[500];
+        
   // p bins for resolution study.  Must be four bins
     double pBin[5] = {0,20,50,100,200};
     TH1D* pBinHist = new TH1D("hpBinHist"," ;p (GeV);",4, pBin);
@@ -224,104 +226,32 @@ float eleMass =  0.000511;
         if (evtCount > maxEvents)
         break;
 	
-	    TLorentzVector proton_4vec_reco;
-        TLorentzVector ele_4vec_reco;
-        TLorentzVector pos_4vec_reco;
-        TLorentzVector pc_4vec_reco;
-        TLorentzVector jpsi_4vec_reco;
-    
+
         TLorentzVector proton_4vec_gen;
         TLorentzVector ele_4vec_gen;
         TLorentzVector pos_4vec_gen;
         TLorentzVector pc_4vec_gen;
         TLorentzVector jpsi_4vec_gen;
 
-	    // Loop over RECO collection 
-        for (unsigned int j=0; j<recop_px.GetSize(); j++) {
-      
-            TVector3 recop3V(recop_px[j], recop_py[j], recop_pz[j]);
-      
-            float recoPt = sqrt(recop_px[j]*recop_px[j] + recop_py[j]*recop_py[j]);
-      
-            hRecop_p->Fill(recop3V.Mag());   // RECO p
-            hRecop_eta->Fill(recop3V.PseudoRapidity());  // RECO eta
-            hRecop_peta->Fill( recop3V.PseudoRapidity(), recop3V.Mag());
-            hRecop_pteta->Fill( recop3V.PseudoRapidity(), recoPt);
-      
-            // Match with Generated particles:
-            double minDr = 100;
-            int iGenOfMinDr = -1;
-            // Loop over GEN collection 
-            for(unsigned int igen=0; igen<genp_pdg.GetSize(); igen++){ // Loop over thrown particles
-    	        if (genp_status[igen] != 1)
-        		   continue;
-                TVector3 iGen3V(genp_px[igen], genp_py[igen], genp_pz[igen]);
-        		double theDr = sqrt( pow(recop3V.PseudoRapidity()- iGen3V.PseudoRapidity(),2) + pow(recop3V.Phi()- iGen3V.Phi(),2));
-		
-                if ( theDr <  minDr) {
-        		  minDr = theDr;
-        		  iGenOfMinDr = igen;
-                }
-            }
-            
-            if ( minDr > 0.3 ) { // matching failed
-                minDr = 100;
-                iGenOfMinDr = -1;
-            }
-        
-            int thePid = kElse;
-            if ( iGenOfMinDr < 0 ) {   // If it's not matached
-                thePid = kElse;
-            }
-            else if ((genp_status[iGenOfMinDr]==1)&&(genp_pdg[iGenOfMinDr]==2212))
-    	      thePid = kProton;
-            else if ((genp_status[iGenOfMinDr]==1)&&(genp_pdg[iGenOfMinDr]==11))
-    	      thePid = kElectron;
-            else if ((genp_status[iGenOfMinDr]==1)&&(genp_pdg[iGenOfMinDr]==-11))
-    	      thePid = kPositron;
-            else
-    	      thePid = kElse;
-	    
-            TVector3 genMatch3V(0,0,0);
-            if ( thePid != kElse) {
-                genMatch3V = TVector3(genp_px[iGenOfMinDr], genp_py[iGenOfMinDr], genp_pz[iGenOfMinDr]);
-                h_matchDr->Fill(minDr);
-                h_matchDr_eta->Fill( minDr, genMatch3V.Eta());
-                hGenP_RecoP[thePid]->Fill( genMatch3V.Mag(), recop3V.Mag());
-                hGenEta_RecoEta[thePid]->Fill( genMatch3V.Eta(), recop3V.Eta());
-            }
-            hGen_p_recoMatched[thePid]->Fill (genMatch3V.Mag());
-            hGen_eta_recoMatched[thePid]->Fill (genMatch3V.Eta());
-            hGen_phi_recoMatched[thePid]->Fill (genMatch3V.Phi());
-            
-            hGen_peta_recoMatched[thePid]->Fill( genMatch3V.Eta(), genMatch3V.Mag());
-            
-            hRecop_p_match[thePid]->Fill( recop3V.Mag());
-            hRecop_eta_match[thePid]->Fill( recop3V.PseudoRapidity());
-            
-            
-            int thePBin = pBinHist->FindBin(genMatch3V.Mag()) - 1; // GEN p    
-            if ( (thePBin>=0) && (thePBin<4) ) {
-    	      hMatch_dp[thePid][thePBin]->Fill ( recop3V.Mag()/genMatch3V.Mag() - 1);
-            }
+	    TLorentzVector proton_4vec_reco;
+        TLorentzVector ele_4vec_reco;
+        TLorentzVector pos_4vec_reco;
+        TLorentzVector pc_4vec_reco;
+        TLorentzVector jpsi_4vec_reco;
 
-    	    if ( thePid == kProton)
-    	      proton_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], protonMass);
-    	    if ( thePid == kElectron)
-    	      ele_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], eleMass);
-    	    if ( thePid == kPositron)
-    	      pos_4vec_reco.SetXYZM(recop_px[j], recop_py[j], recop_pz[j], eleMass);
+
+        // Clear the isGenMatched before matching the GEN with RECO
+        for (unsigned int ireco=0; ireco<recop_px.GetSize(); ireco++) {  
+            isGenMatched[ireco] = false; 
         }
-               
-        jpsi_4vec_reco =  ele_4vec_reco + pos_4vec_reco;
-        pc_4vec_reco =  jpsi_4vec_reco + proton_4vec_reco;
-	
-    
+        
+        // LOOP over GEN particles 
         for(unsigned int i=0; i<genp_pdg.GetSize(); i++)  { // Loop over thrown particles
+
             if (genp_status[i] != 1)
                 continue;
             
-            int thePid = 0;
+            int thePid = kElse;
             if ( genp_pdg[i]==2212) 
                 thePid = kProton; 
             else if ( genp_pdg[i]==11) 
@@ -329,7 +259,7 @@ float eleMass =  0.000511;
             else if ( (int)genp_pdg[i]==-11) 
                 thePid = kPositron; 
             else  
-                thePid = 0; 
+                thePid = kElse; 
       
             TVector3 gen3V(genp_px[i], genp_py[i], genp_pz[i]);
             hGen_p[thePid]->Fill(gen3V.Mag());
@@ -340,15 +270,80 @@ float eleMass =  0.000511;
             float iGenEta = gen3V.PseudoRapidity();
             float iGenPhi = gen3V.Phi();
         
-        }
+            // Match with RECO:
+            double minDr = 0.3;
+            int iRecoOfMinDr = -1;
             
+            // ROOP over GEN collection 
+            for (unsigned int ireco=0; ireco<recop_px.GetSize(); ireco++) {
+                if (isGenMatched[ireco] == true) 
+                    continue;
+                TVector3 recop3V(recop_px[ireco], recop_py[ireco], recop_pz[ireco]);
+        		double theDr = sqrt( pow(recop3V.PseudoRapidity()- gen3V.PseudoRapidity(),2) + pow(recop3V.Phi()- gen3V.Phi(),2));
+		
+                if ( theDr <  minDr) {
+        		  minDr = theDr;
+        		  iRecoOfMinDr = ireco;
+                }
+            }
+            
+            if (iRecoOfMinDr >= 0 ) {  // If matched
+                isGenMatched[iRecoOfMinDr] = true;
+                TVector3 matchedReco3V(recop_px[iRecoOfMinDr], recop_py[iRecoOfMinDr], recop_pz[iRecoOfMinDr]);
+                h_matchDr->Fill(minDr);
+                h_matchDr_eta->Fill( minDr, gen3V.Eta());            
+                hGenP_RecoP[thePid]->Fill( gen3V.Mag(), matchedReco3V.Mag());
+                hGenEta_RecoEta[thePid]->Fill( gen3V.Eta(), matchedReco3V.Eta());
+
+                hGen_p_recoMatched[thePid]->Fill   (gen3V.Mag());
+                hGen_eta_recoMatched[thePid]->Fill (gen3V.Eta());
+                hGen_phi_recoMatched[thePid]->Fill (gen3V.Phi());
+
+                hGen_peta_recoMatched[thePid]->Fill( gen3V.Eta(), gen3V.Mag());           
+                hRecop_p_match[thePid]->Fill( matchedReco3V.Mag());
+                hRecop_eta_match[thePid]->Fill( matchedReco3V.PseudoRapidity());
+
+                // Resolution:
+                int thePBin = pBinHist->FindBin(gen3V.Mag()) - 1; // GEN p binning   
+                if ( (thePBin>=0) && (thePBin<4) ) {
+                  hMatch_dp[thePid][thePBin]->Fill ( matchedReco3V.Mag()/gen3V.Mag() - 1);
+                }
+            
+
+                // Now assign the p,e,ebar
+                if ( thePid == kProton)
+                  proton_4vec_reco.SetXYZM(matchedReco3V.Px(), matchedReco3V.Py(), matchedReco3V.Pz(), protonMass);
+                if ( thePid == kElectron)
+                  ele_4vec_reco.SetXYZM(matchedReco3V.Px(), matchedReco3V.Py(), matchedReco3V.Pz(), eleMass);
+                if ( thePid == kPositron)
+                  pos_4vec_reco.SetXYZM(matchedReco3V.Px(), matchedReco3V.Py(), matchedReco3V.Pz(), eleMass);
+            }
+        
+        }
+
+        if (  (proton_4vec_reco.M()>0) && (ele_4vec_reco.M()>0) && (pos_4vec_reco.M()>0) )  { // If all particles are reconstructed
+            pc_4vec_reco =  jpsi_4vec_reco + proton_4vec_reco;
+                
+            jpsi_4vec_reco = ele_4vec_reco +pos_4vec_reco;
+            hJpsi_mass_reco->Fill (jpsi_4vec_reco.M());
+            hJpsi_mass_eta_reco->Fill (jpsi_4vec_reco.Eta(), jpsi_4vec_reco.M());
+            pc_4vec_reco = proton_4vec_reco + ele_4vec_reco +pos_4vec_reco;
+            hPc_mass_reco->Fill (pc_4vec_reco.M());
+            hPc_mass_eta_reco->Fill (pc_4vec_reco.Eta(), pc_4vec_reco.M());
+        }
+
+        
+        // Loop over RECO collection 
+        for (unsigned int j=0; j<recop_px.GetSize(); j++) {
+            TVector3 recop3V(recop_px[j], recop_py[j], recop_pz[j]);
+            float recoPt = sqrt(recop_px[j]*recop_px[j] + recop_py[j]*recop_py[j]);
+            hRecop_p->Fill(recop3V.Mag());   // RECO p
+            hRecop_eta->Fill(recop3V.PseudoRapidity());  // RECO eta
+            hRecop_peta->Fill( recop3V.PseudoRapidity(), recop3V.Mag());
+            hRecop_pteta->Fill( recop3V.PseudoRapidity(), recoPt);
+        }
+               
     
-        jpsi_4vec_reco = ele_4vec_reco +pos_4vec_reco;
-        hJpsi_mass_reco->Fill (jpsi_4vec_reco.M());
-        hJpsi_mass_eta_reco->Fill (jpsi_4vec_reco.Eta(), jpsi_4vec_reco.M());
-        pc_4vec_reco = proton_4vec_reco + ele_4vec_reco +pos_4vec_reco;
-        hPc_mass_reco->Fill (pc_4vec_reco.M());
-        hPc_mass_eta_reco->Fill (pc_4vec_reco.Eta(), pc_4vec_reco.M());
         	
     
     }
