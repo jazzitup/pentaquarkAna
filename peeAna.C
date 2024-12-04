@@ -37,9 +37,9 @@ float eleMass =  0.000511;
 //void test(TString infile="reconstructed_data_N2100_neutron_theta_0_0.2mard_25GeV_OnlyHcal_info.root") {
 //void peeAna(TString infile="podio_output_Pentaquark_hepmc_output_20241112_50GeV_10evts.hepmc.edm4hep.root") {
 // void peeAna(TString infile="podio_output_Pentaquark_hepmc_output_20241113_50GeV_10000evts.hepmc.edm4hep.root") { 1k E = 50 GeV
-void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta1.9-8_100000evts_ip6_hidiv_275x18.root") {
+// void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta1.9-8_100000evts_ip6_hidiv_275x18.root") {
  // void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta4-8_10000evts_ip6_hidiv_275x18.root") { 
-//void peeAna(TString infile="podio.root") {
+void peeAna(TString infile="podio.root") {
   
     const int kElse = 0;
     const int kProton = 1;
@@ -331,12 +331,32 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0G
 
             
         }
-    
-        if ( (ele_4vec_gen.M()>0) && (pos_4vec_gen.M()>0) )  { // If all particles are generated
+
+
+        // // KINEMATIC CUTS for acceptance:  Both  2< eta <4 
+        // if ( 1 == 1) { 
+        //     if (  !((proton_4vec_gen.M()>0) && (ele_4vec_gen.M()>0) && (pos_4vec_gen.M()>0) ))
+        //         continue;
+        //     if (  !(   (proton_4vec_gen.Eta()>2) && (proton_4vec_gen.Eta()<4) 
+        //             && (ele_4vec_gen.Eta()>2) && (ele_4vec_gen.Eta()<4)
+        //             && (pos_4vec_gen.Eta()>2) && (pos_4vec_gen.Eta()<4)) )
+        //         continue;
+        // }
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        
+        // KINEMATIC CUTS for acceptance:  Both  2< electron eta <4, 4< proton eta <5
+        if ( 1 == 1) { 
+            if (  !((proton_4vec_gen.M()>0) && (ele_4vec_gen.M()>0) && (pos_4vec_gen.M()>0) ))
+                continue;
+            if (  !(   (proton_4vec_gen.Eta()>4) && (proton_4vec_gen.Eta()<5) 
+                    && (ele_4vec_gen.Eta()>2) && (ele_4vec_gen.Eta()<4)
+                    && (pos_4vec_gen.Eta()>2) && (pos_4vec_gen.Eta()<4)) )
+                continue;
+        }
+        
+        if ( (ele_4vec_gen.M()>0) && (pos_4vec_gen.M()>0) ) { // If all particles are generated
             jpsi_4vec_gen = ele_4vec_gen +pos_4vec_gen;
             hJpsi_eta_gen->Fill (jpsi_4vec_gen.Eta());
-            
-
         }
         
         if (  (proton_4vec_gen.M()>0) && (ele_4vec_gen.M()>0) && (pos_4vec_gen.M()>0) )  { 
@@ -344,6 +364,11 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0G
             hPc_eta_gen->Fill ( pc_4vec_gen.Eta());
         }
 
+
+        
+
+
+        
         if (  (proton_4vec_reco.M()>0) && (ele_4vec_reco.M()>0) && (pos_4vec_reco.M()>0) )  { // If all particles are reconstructed
             pc_4vec_reco =  jpsi_4vec_reco + proton_4vec_reco;
                 
