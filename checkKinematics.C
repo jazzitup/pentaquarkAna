@@ -236,8 +236,8 @@ void checkKinematics(TString infile="podio.root") {
         TLorentzVector pc_4vec_gen;
         TLorentzVector jpsi_4vec_gen;
 
-	    TLorentzVector proton_4vec_reco;
-        TLorentzVector ele_4vec_reco;
+	TLorentzVector proton_4vec_reco;
+	TLorentzVector ele_4vec_reco;
         TLorentzVector pos_4vec_reco;
         TLorentzVector pc_4vec_reco;
         TLorentzVector jpsi_4vec_reco;
