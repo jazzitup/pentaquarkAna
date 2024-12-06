@@ -34,8 +34,8 @@ float eleMass =  0.000511;
 
 //void checkKinematics(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta1.9-8_100000evts_ip6_hidiv_275x18.root") {
  // void checkKinematics(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta4-8_10000evts_ip6_hidiv_275x18.root") { 
-void checkKinematics(TString infile="podio.root") {
-  
+ void checkKinematics(TString infile="podio.root") {
+//void checkKinematics(TString infile="podio_files/Pentaquark_hepmc_output_20241204_p275.0GeV_e18.0GeV_kinematicCut_ip6_hidiv_275x18.root") { 
     const int kElse = 0;
     const int kProton = 1;
     const int kElectron = 2;
