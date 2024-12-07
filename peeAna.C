@@ -174,10 +174,6 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241206_p275.0G
     TH1D *hPos_eta = (TH1D*)hProton_eta->Clone("hPos_eta");
     TH1D *hPos_phi = (TH1D*)hProton_phi->Clone("hPos_phi");
   
-    TH1D *hProton_pt_match = (TH1D*)hProton_pt->Clone("hProton_pt_match");
-    TH1D *hProton_eta_match = (TH1D*)hProton_eta->Clone("hProton_eta_match");
-    TH1D *hProton_phi_match = (TH1D*)hProton_phi->Clone("hProton_phi_match");
-  
     TH1D *hEle_pt_match = (TH1D*)hEle_pt->Clone("hEle_pt_match");
     TH1D *hEle_eta_match = (TH1D*)hEle_eta->Clone("hEle_eta_match");
     TH1D *hEle_phi_match = (TH1D*)hEle_phi->Clone("hEle_phi_match");
@@ -200,7 +196,9 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241206_p275.0G
     TH1D *hPc_eta_gen = new TH1D("hJpsi_pc_gen",";#eta^{P_{c}};",50,0,7);
     TH1D *hPc_eta_reco = (TH1D*)hPc_eta_gen->Clone("hPc_eta_reco");
     
-
+    TH1D* hProton_eta_reco = new TH1D("hProton_eta_reco",";#eta^{RECO};",100,0,7);
+    TH1D* hElectron_eta_reco = (TH1D*)hProton_eta_reco->Clone("hElectron_eta_reco");
+    TH1D* hPositron_eta_reco = (TH1D*)hProton_eta_reco->Clone("hPositron_eta_reco");
 
     TH2D *hJpsi_mass_eta_reco = new TH2D ("hJpsi_mass_eta_reco",";J/#psi #eta^{Reco};J/#psi mass^{Reco} (GeV)",10,0,5,50,2.5,3.5);
     TH2D *hPc_mass_eta_reco = new TH2D ("hPc_mass_eta_reco",";P_{c} #eta^{Reco};J/P_{c} mass^{Reco} (GeV)",10,0,5,100,4,5);
@@ -220,7 +218,6 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241206_p275.0G
     handsomeTH1(hEle_pt); handsomeTH1(hEle_eta); handsomeTH1(hEle_phi);
     handsomeTH1(hPos_pt); handsomeTH1(hPos_eta); handsomeTH1(hPos_phi);
 
-    handsomeTH1(hProton_pt_match,2);  handsomeTH1(hProton_eta_match,2); handsomeTH1(hProton_phi_match,2);
     handsomeTH1(hEle_pt_match,2); handsomeTH1(hEle_eta_match,2); handsomeTH1(hEle_phi_match,2);
     handsomeTH1(hPos_pt_match,2); handsomeTH1(hPos_eta_match,2); handsomeTH1(hPos_phi_match,2);
 
@@ -358,12 +355,12 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241206_p275.0G
 	// KINEMATIC CUTS for acceptance:  Both  2< electron eta <4, 4< proton eta <5
 	if (  !((proton_4vec_reco.M()>0) && (ele_4vec_reco.M()>0) && (pos_4vec_reco.M()>0) ))
 	  continue;
-	if (  !(   (proton_4vec_reco.Eta()>3.8) && (proton_4vec_reco.Eta()<10) ) )
-	  continue;
-	//		   && (ele_4vec_reco.Eta()>-10) && (ele_4vec_reco.Eta()<3.8)
-	//		   && (pos_4vec_reco.Eta()>-10) && (pos_4vec_reco.Eta()<3.8)) )
+	if  (  !( (proton_4vec_reco.Eta()>5) && (proton_4vec_reco.Eta()<8) )   )
+        continue;
+     if ( !((ele_4vec_reco.Eta()<3.8) && (pos_4vec_reco.Eta()<3.8)) )
+       continue;
 	
-        
+
 	
 	
         if ( (ele_4vec_gen.M()>0) && (pos_4vec_gen.M()>0) ) { // If all particles are generated
@@ -392,6 +389,11 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241206_p275.0G
             hPc_mass_reco->Fill (pc_4vec_reco.M());
             hPc_eta_reco->Fill(pc_4vec_reco.Eta());
             hPc_mass_eta_reco->Fill (pc_4vec_reco.Eta(), pc_4vec_reco.M());
+
+            hProton_eta_reco->Fill(proton_4vec_reco.Eta());
+            hElectron_eta_reco->Fill(ele_4vec_reco.Eta());
+            hPositron_eta_reco->Fill(pos_4vec_reco.Eta());
+            
         }
 
         
@@ -524,14 +526,13 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241206_p275.0G
         hGen_p[kpid]->Draw("hist");
         hGen_p_recoMatched[kpid]->Draw("same");
         
-        //hProton_pt_match->Draw("same");
         c1->cd(kpid+3);
         handsomeTH1(hGen_eta[kpid],1);
         handsomeTH1(hGen_eta_recoMatched[kpid],2);
         hGen_eta[kpid]->Draw("hist");
         hGen_eta_recoMatched[kpid]->Draw("same");
         
-        //hProton_eta_match->Draw("same");
+    
         c1->cd(kpid+6);
         handsomeTH1(hGen_phi[kpid],1);
         handsomeTH1(hGen_phi_recoMatched[kpid],2);
@@ -558,7 +559,7 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241206_p275.0G
         hEff_eta[kpid]->SetAxisRange(0,1.2,"Y");
         hEff_eta[kpid]->Draw();
         
-        //hProton_eta_match->Draw("same");
+    
         cEff->cd(kpid+6);
         hEff_phi[kpid] = (TH1D*)hGen_phi_recoMatched[kpid]->Clone(Form("hEff_phi_kpid%d",kpid));
         hEff_phi[kpid]->Divide(hGen_phi[kpid]);
@@ -617,7 +618,8 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241206_p275.0G
     c3->cd(2);
     h_matchDr_eta->Draw("colz");
 
-    TCanvas* c4 = new TCanvas("c4","",500,500);
+    TCanvas* c4 = new TCanvas("c4","",1000,1000);
+    c4->Divide(2,2);
     c4->cd(1);
     handsomeTH1(hJpsi_mass_gen,1);
     handsomeTH1(hJpsi_mass_reco,1);
@@ -636,6 +638,19 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241206_p275.0G
     legendM->AddEntry(hJpsi_mass_reco,"e^{+} + e^{-} #leftarrow J/#psi ","pe");
     legendM->AddEntry(hRecop_p_match[kProton],"#it{p} + e^{+} + e^{-} #leftarrow P_{c}","pe");
     legendM->Draw();
+    
+    c4->cd(3);
+    hElectron_eta_reco->Draw();
+    easyRange(hElectron_eta_reco,1.4);
+    auto legend04 = new TLegend(0.3671329,0.6909621,0.8972028,0.8556851,NULL,"brNDC");
+    easyLeg(legend04, "e^{+} & e^{-} track #eta");
+    legend04->Draw();
+    
+    c4->cd(4);
+    hProton_eta_reco->Draw();
+    legend04 = new TLegend(0.3671329,0.6909621,0.8972028,0.8556851,NULL,"brNDC");
+    easyLeg(legend04, "Proton track #eta");
+    legend04->Draw();
     
     
     TCanvas* c5 = new TCanvas("c5","",800,400);
