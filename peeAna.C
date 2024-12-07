@@ -39,7 +39,8 @@ float eleMass =  0.000511;
 // void peeAna(TString infile="podio_output_Pentaquark_hepmc_output_20241113_50GeV_10000evts.hepmc.edm4hep.root") { 1k E = 50 GeV
 // void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta1.9-8_100000evts_ip6_hidiv_275x18.root") {
  // void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241202_p275.0GeV_e18.0GeV_two_body_kinematics_eta4-8_10000evts_ip6_hidiv_275x18.root") { 
-void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241204_p275.0GeV_e18.0GeV_kinematicCut_ip6_hidiv_275x18.root") {
+//void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241204_p275.0GeV_e18.0GeV_kinematicCut_ip6_hidiv_275x18.root") {
+void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241206_p275.0GeV_e18.0GeV_two_body_kinematics_eta5-20_100000evts_ip6_hidiv_275x18.hepmc.root") {
   
     const int kElse = 0;
     const int kProton = 1;
@@ -63,13 +64,13 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241204_p275.0G
   
   // Initialize reader
     TTreeReader tree_reader(mychain);
-  
-  // Get Particle Information
-  //  TTreeReaderArray<float> schit_e(tree_reader, "HcalFarForwardZDCSubcellHits.energy");
-  //  TTreeReaderArray<float> schit_x(tree_reader, "HcalFarForwardZDCSubcellHits.position.x");
-  //  TTreeReaderArray<float> schit_y(tree_reader, "HcalFarForwardZDCSubcellHits.position.y");
-  //  TTreeReaderArray<float> schit_z(tree_reader, "HcalFarForwardZDCSubcellHits.position.z");
-  
+    
+    // Get Particle Information
+    //  TTreeReaderArray<float> schit_e(tree_reader, "HcalFarForwardZDCSubcellHits.energy");
+    //  TTreeReaderArray<float> schit_x(tree_reader, "HcalFarForwardZDCSubcellHits.position.x");
+    //  TTreeReaderArray<float> schit_y(tree_reader, "HcalFarForwardZDCSubcellHits.position.y");
+    //  TTreeReaderArray<float> schit_z(tree_reader, "HcalFarForwardZDCSubcellHits.position.z");
+    
     TTreeReaderArray<int> genp_pdg(tree_reader, "MCParticles.PDG");
     TTreeReaderArray<int> genp_status(tree_reader, "MCParticles.generatorStatus");
     TTreeReaderArray<float> genp_px(tree_reader, "MCParticles.momentum.x");
@@ -100,7 +101,7 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241204_p275.0G
     TH1D *hRecop_pt = new TH1D("recop_pt",";p_{T} (GeV)",100,0,30);
   
     TH1D *hRecop_phi = new TH1D ("recop_phi",";#phi",100,3.141592, -3.141592);
-
+    
     TH2D *hRecop_peta = new TH2D("hRecop_peta",";#eta^{RECO};p^{RECO} (GeV)",100,1,7,100,0,300);
     handsomeTH1(hRecop_peta);
     TH2D *hRecop_pteta = new TH2D("hRecop_pteta",";#eta^{RECO};p_{T}^{RECO} (GeV)",100,1,7,100,0,50);
@@ -345,17 +346,28 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241204_p275.0G
         //////////////////////////////////////////////////////////////////////////////////////////////
         
         // KINEMATIC CUTS for acceptance:  Both  2< electron eta <4, 4< proton eta <5
-        if ( 1 == 1) { 
-            if (  !((proton_4vec_gen.M()>0) && (ele_4vec_gen.M()>0) && (pos_4vec_gen.M()>0) ))
-                continue;
-            if (  !(   (proton_4vec_gen.Eta()>4) && (proton_4vec_gen.Eta()<5) 
-                    && (ele_4vec_gen.Eta()>2) && (ele_4vec_gen.Eta()<4)
-                    && (pos_4vec_gen.Eta()>2) && (pos_4vec_gen.Eta()<4)) )
-                continue;
-        }
+	//        if ( 1 == 1) { 
+	//  if (  !((proton_4vec_gen.M()>0) && (ele_4vec_gen.M()>0) && (pos_4vec_gen.M()>0) ))
+	//                continue;
+	//            if (  !(   (proton_4vec_gen.Eta()>4) && (proton_4vec_gen.Eta()<5) 
+	//                    && (ele_4vec_gen.Eta()>2) && (ele_4vec_gen.Eta()<4)
+	//                    && (pos_4vec_gen.Eta()>2) && (pos_4vec_gen.Eta()<4)) )
+	//                continue;
+	//        }
+
+	// KINEMATIC CUTS for acceptance:  Both  2< electron eta <4, 4< proton eta <5
+	if (  !((proton_4vec_reco.M()>0) && (ele_4vec_reco.M()>0) && (pos_4vec_reco.M()>0) ))
+	  continue;
+	if (  !(   (proton_4vec_reco.Eta()>3.8) && (proton_4vec_reco.Eta()<10) ) )
+	  continue;
+	//		   && (ele_4vec_reco.Eta()>-10) && (ele_4vec_reco.Eta()<3.8)
+	//		   && (pos_4vec_reco.Eta()>-10) && (pos_4vec_reco.Eta()<3.8)) )
+	
         
+	
+	
         if ( (ele_4vec_gen.M()>0) && (pos_4vec_gen.M()>0) ) { // If all particles are generated
-            jpsi_4vec_gen = ele_4vec_gen +pos_4vec_gen;
+	  jpsi_4vec_gen = ele_4vec_gen +pos_4vec_gen;
             hJpsi_eta_gen->Fill (jpsi_4vec_gen.Eta());
         }
         
@@ -371,7 +383,7 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241204_p275.0G
         
         if (  (proton_4vec_reco.M()>0) && (ele_4vec_reco.M()>0) && (pos_4vec_reco.M()>0) )  { // If all particles are reconstructed
             pc_4vec_reco =  jpsi_4vec_reco + proton_4vec_reco;
-                
+	    
             jpsi_4vec_reco = ele_4vec_reco +pos_4vec_reco;
             hJpsi_mass_reco->Fill (jpsi_4vec_reco.M());
             hJpsi_eta_reco->Fill(jpsi_4vec_reco.Eta());
