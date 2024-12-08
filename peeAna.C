@@ -686,10 +686,15 @@ void peeAna(TString infile="podio_files/Pentaquark_hepmc_output_20241206_p275.0G
     legendM->Draw();
     
     c4->cd(3);
-    hElectron_eta_reco->Draw();
     easyRange(hElectron_eta_reco,1.4);
+    handsomeTH1(hPositron_eta_reco,4);
+    hElectron_eta_reco->Draw();
+    hPositron_eta_reco->Draw("hist same");
     auto legend04 = new TLegend(0.3671329,0.6909621,0.8972028,0.8556851,NULL,"brNDC");
-    easyLeg(legend04, "e^{+} & e^{-} track #eta");
+    easyLeg(legend04, "Tacks matcehd to");
+    legend04->AddEntry(hElectron_eta_reco,"electron");
+    legend04->AddEntry(hPositron_eta_reco,"positron");
+    legend04->AddEntry("",", or vice versa","");
     legend04->Draw();
     
     c4->cd(4);
